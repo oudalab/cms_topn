@@ -89,3 +89,52 @@ CREATE FUNCTION topn(cms_topn, anyelement)
     RETURNS TABLE(item anyelement, frequency bigint)
     AS 'MODULE_PATHNAME'
     LANGUAGE C IMMUTABLE;
+
+/* TODO */
+
+CREATE TYPE mms;
+
+CREATE FUNCTION mms_in(cstring)
+	RETURNS mms
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION mms_out(mms)
+	RETURNS cstring
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION mms_recv(internal)
+	RETURNS mms
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C STRICT IMMUTABLE;
+   
+CREATE FUNCTION mms_send(mms)
+	RETURNS bytea
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C STRICT IMMUTABLE;
+
+CREATE TYPE mms (
+	input = mms_in,
+	output = mms_out,
+	receive = mms_recv,
+	send = mms_send,
+	storage = extended
+);
+
+CREATE FUNCTION mms(double precision default 0.001, double precision default 0.99)
+	RETURNS mms
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C IMMUTABLE;
+
+CREATE FUNCTION mms_add(mms, anyelement, integer)
+	RETURNS mms
+	AS 'MODULE_PATHNAME', 'mms_add'
+	LANGUAGE C IMMUTABLE;	
+
+CREATE FUNCTION mms_get_mask(mms, anyelement)
+	RETURNS bigint
+	AS 'MODULE_PATHNAME'
+	LANGUAGE C STRICT IMMUTABLE;
+
+

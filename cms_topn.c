@@ -5,6 +5,8 @@
  * This file contains the function definitions to perform top-n, point and
  * union queries by using the count-min sketch structure.
  *
+ * TODO
+ *
  *-------------------------------------------------------------------------
  */
 
@@ -61,6 +63,17 @@ typedef struct CmsTopn
 	Frequency sketch[1];
 } CmsTopn;
 
+
+/* TODO */
+typedef struct MaskMinSketch
+{
+	char length[4];
+	uint32 sketchDepth;
+	uint32 sketchWidth;
+	uint32 sketch[1];
+} MaskMinSketch;
+
+
 /*
  * FrequentTopnItem is the struct to keep frequent items and their frequencies
  * together.
@@ -95,6 +108,15 @@ static CmsTopn * CmsTopnUnion(CmsTopn *firstCmsTopn, CmsTopn *secondCmsTopn,
                               TypeCacheEntry *itemTypeCacheEntry);
 void SortTopnItems(FrequentTopnItem *topnItemArray, int topnItemCount);
 
+/* TODO */
+static MaskMinSketch* CreateMaskMinSketch(float8 errorBound, float8 confidenceInterval);
+static MaskMinSketch* UpdateMaskMinSketch(MaskMinSketch* currentMms, Datum newItem,
+						TypeCacheEntry* newItemTypeCacheEntry, uint32 newItemMask);
+static uint32 UpdateMmsInPlace(MaskMinSketch* mms, Datum newItem, TypeCacheEntry* newItemTypeCacheEntry,
+						uint32 newItemMask);
+static uint32 MmsEstimateHashedItemMask(MaskMinSketch* mms, uint64* hashValueArray);
+static uint32 MmsEstimateItemMask(MaskMinSketch* mms, Datum item, TypeCacheEntry* itemTypeCacheEntry);
+static uint32 CountSetBits(uint32 mask);
 
 /* declarations for dynamic loading */
 PG_MODULE_MAGIC;
@@ -112,6 +134,15 @@ PG_FUNCTION_INFO_V1(cms_topn_union_agg);
 PG_FUNCTION_INFO_V1(cms_topn_frequency);
 PG_FUNCTION_INFO_V1(cms_topn_info);
 PG_FUNCTION_INFO_V1(topn);
+
+/* TODO */
+PG_FUNCTION_INFO_V1(mms_in);
+PG_FUNCTION_INFO_V1(mms_out);
+PG_FUNCTION_INFO_V1(mms_recv);
+PG_FUNCTION_INFO_V1(mms_send);
+PG_FUNCTION_INFO_V1(mms);
+PG_FUNCTION_INFO_V1(mms_add);
+PG_FUNCTION_INFO_V1(mms_get_mask);
 
 
 /*
@@ -1232,4 +1263,297 @@ SortTopnItems(FrequentTopnItem *topnItemArray, int topnItemCount)
 		topnItemArray[maxItemIndex] = topnItemArray[currentItemIndex];
 		topnItemArray[currentItemIndex] = swapFrequentTopnItem;
 	}
+}
+
+/* TODO */
+
+
+/* TODO */
+Datum
+mms_in(PG_FUNCTION_ARGS)
+{
+	Datum datum = DirectFunctionCall1(byteain, PG_GETARG_DATUM(0));
+
+	return datum;
+}
+
+
+/* TODO */
+Datum
+mms_out(PG_FUNCTION_ARGS)
+{
+	Datum datum = DirectFunctionCall1(byteaout, PG_GETARG_DATUM(0));
+
+	PG_RETURN_CSTRING(datum);
+}
+
+
+/* TODO */
+Datum
+mms_recv(PG_FUNCTION_ARGS)
+{
+	Datum datum = DirectFunctionCall1(bytearecv, PG_GETARG_DATUM(0));
+
+	return datum;
+}
+
+
+/* TODO */
+Datum
+mms_send(PG_FUNCTION_ARGS)
+{
+	Datum datum = DirectFunctionCall1(byteasend, PG_GETARG_DATUM(0));
+
+	return datum;
+}
+
+
+/* TODO */
+Datum
+mms(PG_FUNCTION_ARGS)
+{
+	float8 errorBound = PG_GETARG_FLOAT8(0);
+	float8 confidenceInterval =  PG_GETARG_FLOAT8(1);
+
+	MaskMinSketch* mms = CreateMaskMinSketch(errorBound, confidenceInterval);
+
+	PG_RETURN_POINTER(mms);
+}
+
+
+/* TODO */
+Datum
+mms_add(PG_FUNCTION_ARGS)
+{
+	MaskMinSketch* currentMms = NULL;
+	MaskMinSketch* updatedMms = NULL;
+	Datum newItem = 0;
+	TypeCacheEntry *newItemTypeCacheEntry = NULL;
+	Oid newItemType = InvalidOid;
+	uint32 newItemMask = 0;
+
+	if (PG_ARGISNULL(0))
+	{
+		PG_RETURN_NULL();
+	}
+	else
+	{
+		currentMms = (MaskMinSketch*) PG_GETARG_VARLENA_P(0);
+	}
+
+	if (PG_ARGISNULL(1))
+	{
+		PG_RETURN_POINTER(currentMms);
+	}
+
+	newItemType = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	if (newItemType == InvalidOid)
+	{
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+		                errmsg("could not determine input data type")));
+	}
+
+	newItem = PG_GETARG_DATUM(1);
+	newItemTypeCacheEntry = lookup_type_cache(newItemType, 0);
+
+	newItemMask = PG_GETARG_UINT32(2);
+
+	updatedMms = UpdateMaskMinSketch(currentMms, newItem, newItemTypeCacheEntry, newItemMask);
+
+	PG_RETURN_POINTER(updatedMms);
+}
+
+
+/* TODO */
+Datum
+mms_get_mask(PG_FUNCTION_ARGS)
+{
+	MaskMinSketch* mms = (MaskMinSketch*) PG_GETARG_VARLENA_P(0);
+	Datum item = PG_GETARG_DATUM(1);
+	Oid itemType = get_fn_expr_argtype(fcinfo->flinfo, 1);
+	TypeCacheEntry *itemTypeCacheEntry = NULL;
+	uint32 mask = 0;
+
+	if (itemType == InvalidOid)
+	{
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+		                errmsg("could not determine input data types")));
+	}
+
+	itemTypeCacheEntry = lookup_type_cache(itemType, 0);
+	mask = MmsEstimateItemMask(mms, item, itemTypeCacheEntry);
+
+	PG_RETURN_INT32(mask);
+}
+
+
+/* TODO */
+static MaskMinSketch*
+CreateMaskMinSketch(float8 errorBound, float8 confidenceInterval)
+{
+	MaskMinSketch* mms = NULL;
+	uint32 sketchWidth = 0;
+	uint32 sketchDepth = 0;
+	Size staticStructSize = 0;
+	Size sketchSize = 0;
+	Size totalMmsSize = 0;
+	
+	if (errorBound <= 0 || errorBound >= 1)
+	{
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+		                errmsg("invalid parameters for cms_topn"),
+		                errhint("Error bound has to be between 0 and 1")));
+	}
+	else if (confidenceInterval <= 0 || confidenceInterval >= 1)
+	{
+		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+		                errmsg("invalid parameters for cms_topn"),
+		                errhint("Confidence interval has to be between 0 and 1")));
+	}
+
+	sketchWidth = (uint32) ceil(exp(1) / errorBound);
+	sketchDepth = (uint32) ceil(log(1 / (1 - confidenceInterval)));
+	sketchSize =  sizeof(uint32) * sketchDepth * sketchWidth;
+	staticStructSize = sizeof(MaskMinSketch);
+	totalMmsSize = staticStructSize + sketchSize;
+
+	mms = palloc0(totalMmsSize);
+	mms->sketchDepth = sketchDepth;
+	mms->sketchWidth = sketchWidth;
+
+	SET_VARSIZE(mms, totalMmsSize);
+
+	return mms;
+}
+
+
+/* TODO */
+static MaskMinSketch*
+UpdateMaskMinSketch(MaskMinSketch* currentMms, Datum newItem,
+              TypeCacheEntry* newItemTypeCacheEntry, uint32 newItemMask)
+{
+	MaskMinSketch* updatedMms = NULL;
+	Datum detoastedItem = 0;
+	// Oid newItemType = newItemTypeCacheEntry->type_id;
+	// Oid currentItemType = InvalidOid;
+
+	/* TODO -- check item type correctness */
+
+	if (newItemTypeCacheEntry->typlen == -1)
+	{
+		detoastedItem = PointerGetDatum(PG_DETOAST_DATUM(newItem));
+	}
+	else
+	{
+		detoastedItem = newItem;
+	}
+
+	newItemMask = UpdateMmsInPlace(currentMms, detoastedItem,
+	                                       newItemTypeCacheEntry, newItemMask);
+	
+	updatedMms = currentMms;
+
+	return updatedMms;
+}
+
+
+/* TODO */
+static uint32
+UpdateMmsInPlace(MaskMinSketch* mms, Datum newItem,
+                    TypeCacheEntry* newItemTypeCacheEntry, uint32 newItemMask)
+{
+	uint32 hashIndex = 0;
+	uint64 hashValueArray[2] = {0, 0};
+	StringInfo newItemString = makeStringInfo();
+	uint32 newMask = 0;
+	uint32 minMask = UINT32_MAX;
+
+	ConvertDatumToBytes(newItem, newItemTypeCacheEntry, newItemString);
+	MurmurHash3_x64_128(newItemString->data, newItemString->len, MURMUR_SEED,
+	                    &hashValueArray);
+	
+	minMask = MmsEstimateHashedItemMask(mms, hashValueArray);
+	newMask = minMask | newItemMask;
+	
+	for (hashIndex = 0; hashIndex < mms->sketchDepth; hashIndex++)
+	{
+		uint64 hashValue = hashValueArray[0] + (hashIndex * hashValueArray[1]);
+		uint32 widthIndex = hashValue % mms->sketchWidth;
+		uint32 depthOffset = hashIndex * mms->sketchWidth;
+		uint32 counterIndex = depthOffset + widthIndex;
+	
+		uint32 counterMask = mms->sketch[counterIndex];
+		if (CountSetBits(newMask) > CountSetBits(counterMask))
+		{
+			mms->sketch[counterIndex] = newMask;
+		}
+	}
+
+	return newMask;
+}
+
+
+/* TODO */
+static uint32
+MmsEstimateHashedItemMask(MaskMinSketch* mms, uint64* hashValueArray)
+{
+	uint32 hashIndex = 0;
+	uint32 minMask = UINT32_MAX;
+
+	for (hashIndex = 0; hashIndex < mms->sketchDepth; hashIndex++)
+	{
+		uint64 hashValue = hashValueArray[0] + (hashIndex * hashValueArray[1]);
+		uint32 widthIndex = hashValue % mms->sketchWidth;
+		uint32 depthOffset = hashIndex * mms->sketchWidth;
+		uint32 counterIndex = depthOffset + widthIndex;
+
+		uint32 counterMask = mms->sketch[counterIndex];
+		if (CountSetBits(counterMask) < CountSetBits(minMask))
+		{
+			minMask = counterMask;
+		}
+	}
+
+	return minMask;
+}
+
+
+/* TODO */
+static uint32
+MmsEstimateItemMask(MaskMinSketch* mms, Datum item,
+                             TypeCacheEntry* itemTypeCacheEntry)
+{
+	uint64 hashValueArray[2] = {0, 0};
+	StringInfo itemString = makeStringInfo();
+	uint32 mask = 0;
+
+	if (itemTypeCacheEntry->typlen == -1)
+	{
+		Datum detoastedItem =  PointerGetDatum(PG_DETOAST_DATUM(item));
+		ConvertDatumToBytes(detoastedItem, itemTypeCacheEntry, itemString);
+	}
+	else
+	{
+		ConvertDatumToBytes(item, itemTypeCacheEntry, itemString);
+	}
+	
+	MurmurHash3_x64_128(itemString->data, itemString->len, MURMUR_SEED, &hashValueArray);
+	mask = MmsEstimateHashedItemMask(mms, hashValueArray);
+
+	return mask;
+}
+
+
+/* TODO */
+static uint32
+CountSetBits(uint32 mask)
+{
+	int count = 0;
+	while(mask)
+	{
+		count += mask & 1;
+		mask >>= 1;
+	}
+
+	return count;
 }
