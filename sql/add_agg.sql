@@ -1,5 +1,5 @@
 --
---Testing cms_topn_add_agg function of the extension 
+--Testing cms_add_agg function of the extension 
 --
 
 --prepare tables for aggregates
@@ -28,29 +28,29 @@ INSERT INTO strings SELECT '5' FROM generate_series(1,70000);
 INSERT INTO strings SELECT NULL FROM generate_series(1,30);
 
 --check errors for unproper parameters
-SELECT cms_topn_add_agg(int_column, 0) FROM numbers;
-SELECT cms_topn_add_agg(int_column, -1, 0.2, 0.9) FROM numbers;
-SELECT cms_topn_add_agg(int_column, 1, 2, 0.9) FROM numbers;
-SELECT cms_topn_add_agg(int_column, 3, 0.2, 1.5) FROM numbers;
+SELECT cms_add_agg(int_column, 0) FROM numbers;
+SELECT cms_add_agg(int_column, -1, 0.2, 0.9) FROM numbers;
+SELECT cms_add_agg(int_column, 1, 2, 0.9) FROM numbers;
+SELECT cms_add_agg(int_column, 3, 0.2, 1.5) FROM numbers;
 
 --check aggregates for fixed size types like integer with default parameters
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 0;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 1;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 2;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 3;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 4;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 5;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 6;
-SELECT topn(cms_topn_add_agg(int_column, 3), NULL::integer) FROM numbers;
-SELECT cms_topn_info(cms_topn_add_agg(int_column, 3)) FROM numbers;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 0;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 1;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 2;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 3;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 4;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 5;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers WHERE int_column < 6;
+SELECT cms_topn(cms_add_agg(int_column, 3), NULL::integer) FROM numbers;
+SELECT cms_info(cms_add_agg(int_column, 3)) FROM numbers;
 
 --check aggregates for variable length types like text
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '0';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '1';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '2';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '3';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '4';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '5';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '6';
-SELECT topn(cms_topn_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings;
-SELECT cms_topn_info(cms_topn_add_agg(text_column, 4)) FROM strings;
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '0';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '1';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '2';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '3';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '4';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '5';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings WHERE text_column < '6';
+SELECT cms_topn(cms_add_agg(text_column, 4, 0.01, 0.09), NULL::text) FROM strings;
+SELECT cms_info(cms_add_agg(text_column, 4)) FROM strings;

@@ -1,27 +1,27 @@
 --
---Testing cms_topn_union function of the extension
+--Testing cms_union function of the extension
 --
 
 --check cases with null
-SELECT cms_topn_union(NULL, NULL);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(1),4), NULL), NULL::integer);
-SELECT * FROM topn(cms_topn_union(NULL, cms_topn_add(cms_topn(2),'cms_topn'::text)), NULL::text);
+SELECT cms_union(NULL, NULL);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(1),4), NULL), NULL::integer);
+SELECT * FROM cms_topn(cms_union(NULL, cms_add(cms(2),'cms'::text)), NULL::text);
 
---check cases with empty cms_topn
-SELECT * FROM topn(cms_topn_union(cms_topn(1), cms_topn(1)), NULL::integer);
-SELECT * FROM topn(cms_topn_union(cms_topn(3), cms_topn_add(cms_topn(3),'cms_topn'::text)), NULL::text);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(2),4), cms_topn(2)), NULL::integer);
+--check cases with empty cms
+SELECT * FROM cms_topn(cms_union(cms(1), cms(1)), NULL::integer);
+SELECT * FROM cms_topn(cms_union(cms(3), cms_add(cms(3),'cms'::text)), NULL::text);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(2),4), cms(2)), NULL::integer);
 
---check if parameters of the cms_topns are not the same
-SELECT cms_topn_union(cms_topn(2), cms_topn(1));
-SELECT cms_topn_union(cms_topn(1, 0.1, 0.9), cms_topn(1, 0.1, 0.8));
-SELECT cms_topn_union(cms_topn(1, 0.1, 0.99), cms_topn(1, 0.01, 0.99));
-SELECT cms_topn_union(cms_topn_add(cms_topn(2), 2), cms_topn_add(cms_topn(2), '2'::text));
+--check if parameters of the cmss are not the same
+SELECT cms_union(cms(2), cms(1));
+SELECT cms_union(cms(1, 0.1, 0.9), cms(1, 0.1, 0.8));
+SELECT cms_union(cms(1, 0.1, 0.99), cms(1, 0.01, 0.99));
+SELECT cms_union(cms_add(cms(2), 2), cms_add(cms(2), '2'::text));
 
 --check normal cases
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(1),2), cms_topn_add(cms_topn(1),3)), NULL::integer);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(1),2), cms_topn_add(cms_topn(1),2)), NULL::integer);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(2),'two'::text), cms_topn_add(cms_topn(2),'three'::text)), NULL::text);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(2),'two'::text), cms_topn_add(cms_topn(2),'two'::text)), NULL::text);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(3),'2'::text), cms_topn_add(cms_topn(3),'3'::text)), NULL::text);
-SELECT * FROM topn(cms_topn_union(cms_topn_add(cms_topn(3),'2'::text), cms_topn_add(cms_topn(3),'2'::text)), NULL::text);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(1),2), cms_add(cms(1),3)), NULL::integer);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(1),2), cms_add(cms(1),2)), NULL::integer);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(2),'two'::text), cms_add(cms(2),'three'::text)), NULL::text);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(2),'two'::text), cms_add(cms(2),'two'::text)), NULL::text);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(3),'2'::text), cms_add(cms(3),'3'::text)), NULL::text);
+SELECT * FROM cms_topn(cms_union(cms_add(cms(3),'2'::text), cms_add(cms(3),'2'::text)), NULL::text);
