@@ -2,7 +2,7 @@
 --Testing cms function of the extension which creates new cms structure
 --
 
-CREATE EXTENSION cms;
+CREATE EXTENSION cms_mms;
 
 --check errors for unproper parameters
 SELECT cms(0);
