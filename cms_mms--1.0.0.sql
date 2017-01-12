@@ -1,5 +1,7 @@
 /* cms_mms/cms_mms--1.0.0.sql */
 
+/* ----- Count-min sketch functions / types ----- */
+
 CREATE TYPE cms;
 
 CREATE FUNCTION cms_in(cstring)
@@ -90,7 +92,7 @@ CREATE FUNCTION cms_topn(cms, anyelement)
     AS 'MODULE_PATHNAME'
     LANGUAGE C IMMUTABLE;
 
-/* TODO */
+/* ----- Min-mask sketch functions / types ----- */
 
 CREATE TYPE mms;
 
