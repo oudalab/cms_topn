@@ -1,91 +1,91 @@
-/* cms_topn/cms_topn--1.0.0.sql */
+/* cms_mms/cms_mms--1.0.0.sql */
 
-CREATE TYPE cms_topn;
+CREATE TYPE cms;
 
-CREATE FUNCTION cms_topn_in(cstring)
-	RETURNS cms_topn
+CREATE FUNCTION cms_in(cstring)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION cms_topn_out(cms_topn)
+CREATE FUNCTION cms_out(cms)
 	RETURNS cstring
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION cms_topn_recv(internal)
-	RETURNS cms_topn
+CREATE FUNCTION cms_recv(internal)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
    
-CREATE FUNCTION cms_topn_send(cms_topn)
+CREATE FUNCTION cms_send(cms)
 	RETURNS bytea
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE TYPE cms_topn (
-	input = cms_topn_in,
-	output = cms_topn_out,
-	receive = cms_topn_recv,
-	send = cms_topn_send,
+CREATE TYPE cms (
+	input = cms_in,
+	output = cms_out,
+	receive = cms_recv,
+	send = cms_send,
 	storage = extended
 );
 
-CREATE FUNCTION cms_topn(integer, double precision default 0.001, double precision default 0.99)
-	RETURNS cms_topn
+CREATE FUNCTION cms(integer, double precision default 0.001, double precision default 0.99)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 	    
-CREATE FUNCTION cms_topn_add(cms_topn, anyelement)
-	RETURNS cms_topn
-	AS 'MODULE_PATHNAME', 'cms_topn_add'
+CREATE FUNCTION cms_add(cms, anyelement)
+	RETURNS cms
+	AS 'MODULE_PATHNAME', 'cms_add'
 	LANGUAGE C IMMUTABLE;	
 
-CREATE FUNCTION cms_topn_add_agg(cms_topn, anyelement, integer)
-	RETURNS cms_topn
+CREATE FUNCTION cms_add_agg(cms, anyelement, integer)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION cms_topn_add_agg_with_parameters(cms_topn, anyelement, integer, double precision default 0.001, double precision default 0.99)
-	RETURNS cms_topn
+CREATE FUNCTION cms_add_agg_with_parameters(cms, anyelement, integer, double precision default 0.001, double precision default 0.99)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 	
-CREATE AGGREGATE cms_topn_add_agg(anyelement, integer)(
-	SFUNC = cms_topn_add_agg,
-    STYPE = cms_topn
+CREATE AGGREGATE cms_add_agg(anyelement, integer)(
+	SFUNC = cms_add_agg,
+    STYPE = cms
 );
 
-CREATE AGGREGATE cms_topn_add_agg(anyelement, integer, double precision, double precision )(
-	SFUNC = cms_topn_add_agg_with_parameters,
-    STYPE = cms_topn
+CREATE AGGREGATE cms_add_agg(anyelement, integer, double precision, double precision )(
+	SFUNC = cms_add_agg_with_parameters,
+    STYPE = cms
 );
 	
-CREATE FUNCTION cms_topn_frequency(cms_topn, anyelement)
+CREATE FUNCTION cms_get_frequency(cms, anyelement)
 	RETURNS bigint
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION cms_topn_union(cms_topn, cms_topn)
-	RETURNS cms_topn
+CREATE FUNCTION cms_union(cms, cms)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION cms_topn_union_agg(cms_topn, cms_topn)
-	RETURNS cms_topn
+CREATE FUNCTION cms_union_agg(cms, cms)
+	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
 
-CREATE AGGREGATE cms_topn_union_agg(cms_topn )(
-	SFUNC = cms_topn_union_agg,
-    STYPE = cms_topn
+CREATE AGGREGATE cms_union_agg(cms)(
+	SFUNC = cms_union_agg,
+    STYPE = cms
 );
 
-CREATE FUNCTION cms_topn_info(cms_topn)
+CREATE FUNCTION cms_info(cms)
 	RETURNS text
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION topn(cms_topn, anyelement) 
+CREATE FUNCTION cms_topn(cms, anyelement) 
     RETURNS TABLE(item anyelement, frequency bigint)
     AS 'MODULE_PATHNAME'
     LANGUAGE C IMMUTABLE;
