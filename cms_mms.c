@@ -467,7 +467,7 @@ static CountMinSketch* _cmsUnion(CountMinSketch* firstCms, CountMinSketch* secon
 			newCms->sketch[topnItemIndex] += secondCms->sketch[topnItemIndex];
 		}
 
-		secondTopnArrayIterator = array_create_iterator(secondTopnArray, 0);
+		secondTopnArrayIterator = array_create_iterator(secondTopnArray, 0, NULL);
 
 		/*
 		 * One by one we add top-n items in second top-n array to top-n array of
@@ -676,7 +676,7 @@ Datum cms_topn(PG_FUNCTION_ARGS)
 		topnArraySize = sizeof(FrequentTopnItem) * topnArrayLength;
 		sortedTopnArray = palloc0(topnArraySize);
 
-		topnIterator = array_create_iterator(topnArray, 0);
+		topnIterator = array_create_iterator(topnArray, 0, NULL);
 		hasMoreItem = array_iterate(topnIterator, &topnItem, &isNull);
 		while (hasMoreItem)
 		{
@@ -721,7 +721,7 @@ Datum cms_topn(PG_FUNCTION_ARGS)
 		tupleNulls[1] = ' ';
 
 		completeTupleDescriptor = functionCallContext->tuple_desc;
-		topnItemTuple = heap_formtuple(completeTupleDescriptor, tupleValues, tupleNulls);
+		topnItemTuple = heap_form_tuple(completeTupleDescriptor, tupleValues, tupleNulls);
 
 		topnItemDatum = HeapTupleGetDatum(topnItemTuple);
 		SRF_RETURN_NEXT(functionCallContext, topnItemDatum);
@@ -1030,7 +1030,7 @@ static ArrayType* _updateTopnArray(CountMinSketch* cms, Datum candidateItem, Typ
 	}
 	else
 	{
-		ArrayIterator iterator = array_create_iterator(currentTopnArray, 0);
+		ArrayIterator iterator = array_create_iterator(currentTopnArray, 0, NULL);
 		Datum topnItem = 0;
 		int topnItemIndex = 1;
 		int minItemIndex = 1;
