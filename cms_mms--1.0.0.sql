@@ -32,7 +32,7 @@ CREATE TYPE cms (
 	storage = extended
 );
 
-CREATE FUNCTION cms(integer, double precision default 0.001, double precision default 0.99)
+CREATE FUNCTION cms( double precision default 0.001, double precision default 0.99)
 	RETURNS cms
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C IMMUTABLE;
@@ -41,56 +41,16 @@ CREATE FUNCTION cms_add(cms, anyelement)
 	RETURNS cms
 	AS 'MODULE_PATHNAME', 'cms_add'
 	LANGUAGE C IMMUTABLE;	
-
-CREATE FUNCTION cms_add_agg(cms, anyelement, integer)
-	RETURNS cms
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE;
-
-CREATE FUNCTION cms_add_agg_with_parameters(cms, anyelement, integer, double precision default 0.001, double precision default 0.99)
-	RETURNS cms
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE;
-	
-CREATE AGGREGATE cms_add_agg(anyelement, integer)(
-	SFUNC = cms_add_agg,
-    STYPE = cms
-);
-
-CREATE AGGREGATE cms_add_agg(anyelement, integer, double precision, double precision )(
-	SFUNC = cms_add_agg_with_parameters,
-    STYPE = cms
-);
 	
 CREATE FUNCTION cms_get_frequency(cms, anyelement)
 	RETURNS bigint
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION cms_union(cms, cms)
-	RETURNS cms
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE;
-
-CREATE FUNCTION cms_union_agg(cms, cms)
-	RETURNS cms
-	AS 'MODULE_PATHNAME'
-	LANGUAGE C IMMUTABLE;
-
-CREATE AGGREGATE cms_union_agg(cms)(
-	SFUNC = cms_union_agg,
-    STYPE = cms
-);
-
 CREATE FUNCTION cms_info(cms)
 	RETURNS text
 	AS 'MODULE_PATHNAME'
 	LANGUAGE C STRICT IMMUTABLE;
-
-CREATE FUNCTION cms_topn(cms, anyelement) 
-    RETURNS TABLE(item anyelement, frequency bigint)
-    AS 'MODULE_PATHNAME'
-    LANGUAGE C IMMUTABLE;
 
 /* ----- Min-mask sketch functions / types ----- */
 
