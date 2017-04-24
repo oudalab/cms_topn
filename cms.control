@@ -1,0 +1,4 @@
+# cms extension
+comment = 'type for count-min-sketch'
+default_version = '1.0.0'
+module_pathname = '$libdir/cms'

@@ -1,18 +1,18 @@
 #-------------------------------------------------------------------------
 #
-# Makefile for cms_mms
+# Makefile for cms
 #
 #-------------------------------------------------------------------------
 
-MODULE_big = cms_mms
+MODULE_big = cms
 OBJS =		\
-			cms_mms.o \
+			cms.o \
 			MurmurHash3.o \
 			$(NULL)
 
-EXTENSION = cms_mms
+EXTENSION = cms
 DATA =		\
-			cms_mms--1.0.0.sql \
+			cms--1.0.0.sql \
 			$(NULL)
 
 
@@ -21,7 +21,7 @@ REGRESS = create add add_agg union union_agg results copy
 EXTRA_CLEAN += -r $(RPM_BUILD_ROOT)
 
 PG_CPPFLAGS += -fPIC
-cms_mms.o: override CFLAGS += -std=c99
+cms.o: override CFLAGS += -std=c99
 MurmurHash3.o: override CFLAGS += -std=c99
 
 ifdef DEBUG
