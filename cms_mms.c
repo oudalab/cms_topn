@@ -6,8 +6,9 @@
  * union queries by using the count-min sketch structure.
  *
  * It additionally contains implementation of an extension upon the
- * coun-min sketch structure called a min-mask sketch that uses bit masks
- * to identify tags associated with items instead of estimating frequency.
+ * coun-min sketch structure called a min mask sketch that uses bit masks
+ * to store sharing policies associated with items instead of estimating
+ * frequency.
  *
  *-------------------------------------------------------------------------
  */
